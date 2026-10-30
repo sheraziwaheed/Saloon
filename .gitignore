@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.next-dev/
+.env
+.env.local
+prisma/*.db*
+*.tsbuildinfo
+test-results/
+audit-report.json

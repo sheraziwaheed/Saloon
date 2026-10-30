@@ -1,0 +1,8 @@
+node_modules
+.next
+.next-dev
+test-results
+package-lock.json
+prisma/migrations
+audit-report.json
+*.tsbuildinfo
