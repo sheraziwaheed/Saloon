@@ -1,295 +1,336 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
-  provider = "sqlite"
-  url = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
+
 model User {
-  id String @id @default(cuid())
-  name String?
-  email String @unique
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
   emailVerified DateTime?
-  image String?
-  password String?
-  role String @default("CLIENT")
-  staffId String?
-  accounts Account[]
-  sessions Session[]
-  createdAt DateTime @default(now())
+  image         String?
+  password      String?
+  role          String    @default("CLIENT")
+  staffId       String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
 }
+
 model Account {
-  id String @id @default(cuid())
-  userId String
-  type String
-  provider String
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
   providerAccountId String
-  refresh_token String?
-  access_token String?
-  expires_at Int?
-  token_type String?
-  scope String?
-  id_token String?
-  session_state String?
-  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
-  @@unique([provider,providerAccountId])
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
+
 model Session {
-  id String @id @default(cuid())
-  sessionToken String @unique
-  userId String
-  expires DateTime
-  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 model VerificationToken {
   identifier String
-  token String @unique
-  expires DateTime
-  @@unique([identifier,token])
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
+
 model Client {
-  id String @id @default(cuid())
-  email String @unique
-  name String
-  phone String
-  notes String @default("")
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String
+  phone    String
+  notes    String    @default("")
   bookings Booking[]
 }
+
 model Branch {
-  id String @id
-  name String
-  address String
-  phone String
-  staff Staff[]
+  id       String    @id
+  name     String
+  address  String
+  phone    String
+  staff    Staff[]
   bookings Booking[]
 }
+
 model Staff {
-  id String @id
-  name String
-  role String
-  bio String
-  image String
-  branchId String
-  branch Branch @relation(fields:[branchId],references:[id])
+  id        String          @id
+  name      String
+  role      String
+  bio       String
+  image     String
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id])
   schedules StaffSchedule[]
-  timeOff TimeOff[]
-  services StaffService[]
-  bookings Booking[]
+  timeOff   TimeOff[]
+  services  StaffService[]
+  bookings  Booking[]
 }
+
 model StaffSchedule {
-  id String @id @default(cuid())
-  staffId String
-  weekday Int
-  startMinute Int @default(540)
-  endMinute Int @default(1080)
-  staff Staff @relation(fields:[staffId],references:[id],onDelete:Cascade)
-  @@unique([staffId,weekday])
+  id          String @id @default(cuid())
+  staffId     String
+  weekday     Int
+  startMinute Int    @default(540)
+  endMinute   Int    @default(1080)
+  staff       Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, weekday])
 }
+
 model TimeOff {
-  id String @id @default(cuid())
+  id      String   @id @default(cuid())
   staffId String
-  start DateTime
-  end DateTime
-  staff Staff @relation(fields:[staffId],references:[id],onDelete:Cascade)
+  start   DateTime
+  end     DateTime
+  staff   Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
 }
+
 model ServiceCategory {
-  id String @id
-  name String
-  image String
+  id          String    @id
+  name        String
+  image       String
   description String
-  services Service[]
+  services    Service[]
 }
+
 model Service {
-  id String @id
-  slug String @unique
-  name String
+  id          String          @id
+  slug        String          @unique
+  name        String
   description String
-  price Int
-  duration Int
-  buffer Int @default(15)
-  image String
-  categoryId String
-  active Boolean @default(true)
-  category ServiceCategory @relation(fields:[categoryId],references:[id])
-  staff StaffService[]
-  items BookingItem[]
+  price       Int
+  duration    Int
+  buffer      Int             @default(15)
+  image       String
+  categoryId  String
+  active      Boolean         @default(true)
+  category    ServiceCategory @relation(fields: [categoryId], references: [id])
+  staff       StaffService[]
+  items       BookingItem[]
 }
+
 model AddOn {
-  id String @id
-  name String
-  price Int
+  id       String @id
+  name     String
+  price    Int
   duration Int
 }
+
 model StaffService {
-  staffId String
+  staffId   String
   serviceId String
-  staff Staff @relation(fields:[staffId],references:[id],onDelete:Cascade)
-  service Service @relation(fields:[serviceId],references:[id],onDelete:Cascade)
-  @@id([staffId,serviceId])
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([staffId, serviceId])
 }
+
 model Booking {
-  id String @id @default(cuid())
-  clientId String
-  branchId String
-  staffId String
-  start DateTime
-  end DateTime
-  status String @default("CONFIRMED")
-  total Int
-  deposit Int @default(0)
+  id                String        @id @default(cuid())
+  clientId          String
+  branchId          String
+  staffId           String
+  start             DateTime
+  end               DateTime
+  status            String        @default("CONFIRMED")
+  total             Int
+  deposit           Int           @default(0)
   checkoutSessionId String?
-  checkoutAttempt Int @default(0)
-  token String @unique
-  notes String @default("")
-  addOnIds String @default("[]")
-  voucherCode String?
-  voucherAmount Int @default(0)
-  reminderSent Boolean @default(false)
-  createdAt DateTime @default(now())
-  client Client @relation(fields:[clientId],references:[id])
-  branch Branch @relation(fields:[branchId],references:[id])
-  staff Staff @relation(fields:[staffId],references:[id])
-  items BookingItem[]
-  payments Payment[]
-  slots BookingSlot[]
-  @@index([staffId,start,end])
+  checkoutAttempt   Int           @default(0)
+  token             String        @unique
+  notes             String        @default("")
+  addOnIds          String        @default("[]")
+  voucherCode       String?
+  voucherAmount     Int           @default(0)
+  reminderSent      Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  client            Client        @relation(fields: [clientId], references: [id])
+  branch            Branch        @relation(fields: [branchId], references: [id])
+  staff             Staff         @relation(fields: [staffId], references: [id])
+  items             BookingItem[]
+  payments          Payment[]
+  slots             BookingSlot[]
+
+  @@index([staffId, start, end])
 }
+
 model BookingSlot {
-  id String @id @default(cuid())
-  staffId String
-  start DateTime
+  id        String   @id @default(cuid())
+  staffId   String
+  start     DateTime
   bookingId String
-  booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
-  @@unique([staffId,start])
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, start])
 }
+
 model BookingItem {
-  id String @id @default(cuid())
+  id        String  @id @default(cuid())
   bookingId String
   serviceId String
-  price Int
-  booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
-  service Service @relation(fields:[serviceId],references:[id])
+  price     Int
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id])
 }
+
 model Payment {
-  id String @id @default(cuid())
+  id        String   @id @default(cuid())
   bookingId String?
-  stripeId String @unique
-  amount Int
-  status String
-  booking Booking? @relation(fields:[bookingId],references:[id])
+  stripeId  String   @unique
+  amount    Int
+  status    String
+  booking   Booking? @relation(fields: [bookingId], references: [id])
 }
+
 model ProductCategory {
-  id String @id
-  name String
+  id       String    @id
+  name     String
   products Product[]
 }
+
 model Brand {
-  id String @id
-  name String
+  id       String    @id
+  name     String
   products Product[]
 }
+
 model Product {
-  id String @id
-  slug String @unique
-  name String
+  id          String          @id
+  slug        String          @unique
+  name        String
   description String
-  price Int
-  stock Int @default(30)
-  image String
-  categoryId String
-  brandId String
-  category ProductCategory @relation(fields:[categoryId],references:[id])
-  brand Brand @relation(fields:[brandId],references:[id])
-  items OrderItem[]
+  price       Int
+  stock       Int             @default(30)
+  image       String
+  categoryId  String
+  brandId     String
+  category    ProductCategory @relation(fields: [categoryId], references: [id])
+  brand       Brand           @relation(fields: [brandId], references: [id])
+  items       OrderItem[]
 }
+
 model Order {
-  id String @id @default(cuid())
-  email String
-  total Int
-  status String @default("PENDING")
-  stripeId String? @unique
-  createdAt DateTime @default(now())
-  items OrderItem[]
+  id        String      @id @default(cuid())
+  email     String
+  total     Int
+  status    String      @default("PENDING")
+  stripeId  String?     @unique
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
 }
+
 model OrderItem {
-  id String @id @default(cuid())
-  orderId String
+  id        String  @id @default(cuid())
+  orderId   String
   productId String
-  quantity Int
-  price Int
-  order Order @relation(fields:[orderId],references:[id],onDelete:Cascade)
-  product Product @relation(fields:[productId],references:[id])
+  quantity  Int
+  price     Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }
+
 model Coupon {
-  code String @id
+  code    String   @id
   percent Int
   expires DateTime
-  active Boolean @default(true)
+  active  Boolean  @default(true)
 }
+
 model Voucher {
-  code String @id
+  code    String   @id
   balance Int
-  email String
+  email   String
   expires DateTime
 }
+
 model LoyaltyTransaction {
-  id String @id @default(cuid())
-  email String
-  points Int
+  id          String   @id @default(cuid())
+  email       String
+  points      Int
   description String
-  bookingId String? @unique
-  createdAt DateTime @default(now())
+  bookingId   String?  @unique
+  createdAt   DateTime @default(now())
 }
+
 model Review {
-  id String @id @default(cuid())
-  name String
-  rating Int
-  text String
+  id      String @id @default(cuid())
+  name    String
+  rating  Int
+  text    String
   service String
 }
+
 model BlogPost {
-  id String @id
-  slug String @unique
-  title String
-  excerpt String
-  content String
-  category String
-  image String
-  publishedAt DateTime @default(now())
-  seoTitle String?
+  id             String   @id
+  slug           String   @unique
+  title          String
+  excerpt        String
+  content        String
+  category       String
+  image          String
+  publishedAt    DateTime @default(now())
+  seoTitle       String?
   seoDescription String?
 }
+
 model GalleryItem {
-  id String @id @default(cuid())
-  title String
-  image String
+  id          String  @id @default(cuid())
+  title       String
+  image       String
   beforeImage String?
-  category String
+  category    String
 }
+
 model Faq {
-  id String @id @default(cuid())
+  id       String @id @default(cuid())
   question String
-  answer String
+  answer   String
 }
+
 model ContactMessage {
-  id String @id @default(cuid())
-  name String
-  email String
-  message String
-  branchId String
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  branchId  String
   createdAt DateTime @default(now())
 }
+
 model NewsletterSubscriber {
-  id String @id @default(cuid())
-  email String @unique
+  id        String   @id @default(cuid())
+  email     String   @unique
   createdAt DateTime @default(now())
 }
+
 model Setting {
-  key String @id
+  key   String @id
   value String
 }
+
 model RateLimit {
-  key String @id
-  count Int @default(1)
+  key     String   @id
+  count   Int      @default(1)
   expires DateTime
 }

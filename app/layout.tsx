@@ -5,6 +5,7 @@ import { Header, Footer } from "@/components/sections/shell";
 import { site } from "@/config/site";
 import { getSetting } from "@/lib/settings";
 import "./globals.css";
+export const dynamic = "force-dynamic";
 const serif = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600"],

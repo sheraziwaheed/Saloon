@@ -20,7 +20,7 @@ Database: users/auth sessions; clients; branches/staff/schedules/time off; categ
 
 ## Phases and verification
 
-1. Scaffold Next.js 15/strict TypeScript, Tailwind, shared brand config, local SQLite and design system.
+1. Scaffold Next.js 15/strict TypeScript, Tailwind, shared brand config, PostgreSQL and design system.
 2. Build responsive public pages with filtering, accessible dialogs, search and original imagery.
 3. Test availability boundaries, overlap/buffer and cancellation rules before implementing the booking engine. Add secure management token and ICS.
 4. Add Auth.js, hashed credentials, account history and role checks.
@@ -28,4 +28,4 @@ Database: users/auth sessions; clients; branches/staff/schedules/time off; categ
 6. Add cart, server-priced checkout, test Stripe webhook and configurable email.
 7. Add metadata, structured data, sitemap, errors/loading, documentation. Run seed, tests, lint, typecheck and production build; smoke-test routes and booking conflict handling.
 
-Local app is the requested deliverable. PostgreSQL deployment requires changing Prisma provider and generating a provider-specific migration, plus persistent database and external credentials. No cloud resources are provisioned.
+The app uses PostgreSQL for local development and deployment. The datasource and initial migration are PostgreSQL-specific; configure pooled and direct Neon URLs for the intended environment. See docs/POSTGRESQL.md for build and migration setup.

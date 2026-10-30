@@ -3,7 +3,12 @@ node_modules/
 .next-dev/
 .env
 .env.local
-prisma/*.db*
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
 *.tsbuildinfo
 test-results/
 audit-report.json

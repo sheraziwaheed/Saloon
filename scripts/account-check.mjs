@@ -1,9 +1,7 @@
 ﻿import { chromium } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomBytes } from "node:crypto";
-const db = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL || "file:./dev.db" } },
-});
+const db = new PrismaClient();
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const page = await browser.newPage();
 const base = process.env.BASE_URL || "http://127.0.0.1:3001";

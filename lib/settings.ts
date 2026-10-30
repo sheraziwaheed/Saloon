@@ -56,13 +56,19 @@ export const settingSchemas = {
 };
 export async function getSetting<K extends keyof typeof settingSchemas>(
   key: K,
+  read: (key: string) => Promise<{ value: string } | null> = (key) =>
+    db.setting.findUnique({ where: { key } }),
 ) {
-  const row = await db.setting.findUnique({ where: { key } });
-  let raw: unknown = {};
   try {
-    raw = row ? JSON.parse(row.value) : {};
-  } catch {}
-  return settingSchemas[key].parse(raw) as z.infer<(typeof settingSchemas)[K]>;
+    const row = await read(key);
+    const raw: unknown = row ? JSON.parse(row.value) : {};
+    const result = settingSchemas[key].safeParse(raw);
+    if (result.success)
+      return result.data as z.infer<(typeof settingSchemas)[K]>;
+  } catch {
+    // Optional presentation settings must not block builds or the shared layout.
+  }
+  return settingSchemas[key].parse({}) as z.infer<(typeof settingSchemas)[K]>;
 }
 export function renderTemplate(
   template: string,

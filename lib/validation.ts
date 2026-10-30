@@ -28,8 +28,16 @@ export const registerSchema = z.object({
   email,
   password: z.string().min(10, "Use at least 10 characters.").max(128),
 });
+const postgresUrl = z
+  .string()
+  .url()
+  .refine(
+    (value) => /^postgres(?:ql)?:\/\//.test(value),
+    "Use a PostgreSQL connection URL.",
+  );
 export const envSchema = z.object({
-  DATABASE_URL: z.string().default("file:./dev.db"),
+  DATABASE_URL: postgresUrl.optional(),
+  DATABASE_URL_UNPOOLED: postgresUrl.optional(),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   AUTH_SECRET: z.string().min(32).optional(),
   STRIPE_SECRET_KEY: z.string().optional(),

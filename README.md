@@ -6,14 +6,16 @@ An original salon website built with Next.js 15 App Router, strict TypeScript, T
 
 Use **Node.js 22.19+** (Node 24 recommended) and npm.
 
+Copy `.env.example` to `.env` and set the pooled `DATABASE_URL` and direct `DATABASE_URL_UNPOOLED` from your Neon project. Set a private random `AUTH_SECRET` of at least 32 characters. Installation never creates or changes `.env` or database files.
+
 ```sh
 npm install
-npx prisma migrate dev
+npx prisma migrate deploy
 npx prisma db seed
 npm run dev
 ```
 
-Open **http://127.0.0.1:3000**. Installation creates a local `.env` from `.env.example` with a random authentication secret if none exists, and initializes the SQLite file for Prisma on Windows. Never commit `.env` or database files. The seed is repeatable and does not create a default administrator password.
+Open **http://127.0.0.1:3000**. This project uses PostgreSQL in both development and production. Use an isolated Neon development branch for local work. Never commit `.env` or database exports. The seed is repeatable and does not create a default administrator password.
 
 The demonstration contains 27 services across 6 categories, 6 staff, 2 branches, 12 products, 6 articles, 10 illustrative reviews, FAQs and two offers. Staff profiles, reviews, business details and product claims are fictional demonstration content. Editorial photographs use replaceable Unsplash URLs.
 
@@ -50,7 +52,8 @@ Copy service variables into `.env` as needed:
 
 | Variable                                               | Purpose                                                                 |
 | ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `DATABASE_URL`                                         | Local `file:./dev.db`, or a PostgreSQL URL after provider conversion    |
+| `DATABASE_URL`                                         | Pooled PostgreSQL connection URL for application queries                 |
+| `DATABASE_URL_UNPOOLED`                                | Direct PostgreSQL connection URL used by Prisma schema operations        |
 | `AUTH_SECRET`                                          | Random private session signing secret; required in production           |
 | `AUTH_URL`                                             | Auth.js public origin                                                   |
 | `NEXT_PUBLIC_SITE_URL`                                 | Canonical public origin and checkout return URLs                        |
@@ -96,7 +99,7 @@ npm run typecheck
 npm run build
 ```
 
-`npm test` includes real SQLite booking conflict and time-off integration tests. Seed first. Tests create uniquely identified clients and remove their own data. Browser verification uses locally installed Chrome:
+`npm test` runs database-free booking-rule, environment-validation and settings-fallback tests. `npm run test:integration` runs booking conflict, assignment and time-off tests against a seeded PostgreSQL development database; use a dedicated test branch, not production. Tests create uniquely identified clients and remove their own data. Browser verification uses locally installed Chrome:
 
 ```sh
 node scripts/browser-check.mjs
@@ -106,15 +109,17 @@ The browser script defaults to a production server at port 3001 (`npm run start 
 
 ## Deploy to Vercel with PostgreSQL
 
-SQLite is local development only. Vercel’s ephemeral filesystem is unsuitable for this database.
+The Prisma schema uses PostgreSQL. `postinstall` only runs `prisma generate`, and the build command is `prisma generate && next build`. The compatibility bootstrap helper performs no file writes and does not configure a database.
 
-1. Provision a persistent PostgreSQL database and set `DATABASE_URL` securely in the deployment environment.
-2. Change the Prisma datasource provider from `sqlite` to `postgresql`. Keep the SQLite migration history in a separate archived development directory; generate a new PostgreSQL initial migration against a development Postgres database. SQLite SQL migrations cannot be applied to Postgres unchanged.
-3. Review and commit the PostgreSQL schema/migration. Apply production migrations with `prisma migrate deploy` in your release process. Seed only the intended catalogue; do not add fictional reviews to a live salon.
+1. Set `DATABASE_URL` and `DATABASE_URL_UNPOOLED` securely for the intended Vercel environments. Use the Neon pooled URL for the first and the direct URL for the second.
+2. Review the PostgreSQL initial migration. Old SQLite migrations and database files have been removed. For an existing PostgreSQL database with tables, baseline the migration history before deploying; do not blindly apply an empty-database migration over existing tables.
+3. Apply reviewed migrations with `npx prisma migrate deploy` in your release process, separately from building the app. Seed only the intended catalogue; do not add fictional reviews to a live salon.
 4. Configure `AUTH_SECRET`, the public origins, OAuth callback, SMTP, Stripe test keys and its webhook. Set the Vercel install command to `npm ci` and build command to `npm run build`.
 5. Verify the full booking/payment/webhook/email flow in preview before promoting. The application intentionally rejects live Stripe keys until you deliberately implement and review a live-mode launch.
 
 There is no automatic external deployment or account provisioning in this local deliverable.
+
+The root layout and DB-backed pages render dynamically. Optional business/SEO/offer settings use validated defaults when the database is missing, unreachable or contains invalid settings. Production builds do not require a live database connection. Runtime bookings, sign-in and catalogue queries still require a configured, initialized PostgreSQL database. Database URLs are never replaced with a local file fallback.
 
 ## Files
 

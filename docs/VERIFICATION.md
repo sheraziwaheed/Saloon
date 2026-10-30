@@ -2,6 +2,10 @@
 
 Local verification, 30 October 2026.
 
+PostgreSQL conversion: the datasource now uses PostgreSQL with pooled/direct environment URLs. Old SQLite migration files and the local database file were removed and replaced with a generated PostgreSQL initial migration. `npm run build` passed with neither database URL configured locally, demonstrating that no live connection is required to compile the app. All 12 database-free tests, ESLint and TypeScript checks passed. PostgreSQL integration tests and applying the migration to Neon require the project's connection strings and were not run against a remote database.
+
+The following browser and database integration results record the earlier local baseline before the PostgreSQL conversion:
+
 - Next.js production build, strict TypeScript and ESLint checked.
 - 11 automated tests cover overlap/buffer rules, closing time, cancellation cutoff, London daylight saving, public Host/origin validation, concurrent SQLite reservations, staff service assignment, time off, cross-branch staff selection, invalid coupons, validated settings, email placeholders and structured-data escaping.
 - Chrome checked 24 routes, service search, booking confirmation, rescheduling, ICS download, cancellation, persistent cart and mobile navigation. No page JavaScript errors, visible failed images or horizontal overflow were observed.

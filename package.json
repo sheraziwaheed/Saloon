@@ -8,8 +8,9 @@
     "start": "next start --hostname 127.0.0.1",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
-    "postinstall": "node scripts/bootstrap.mjs && prisma generate",
+    "test": "tsx --test tests/booking.test.ts tests/settings.test.ts",
+    "test:integration": "tsx --test tests/integration.test.ts",
+    "postinstall": "prisma generate",
     "format": "prettier --write ."
   },
   "prisma": {
