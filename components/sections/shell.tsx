@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import { categories, services, products, posts } from "@/lib/catalog";
 import { site as defaultSite } from "@/config/site";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 const Modal = dynamic(
   () => import("@/components/ui/modal").then((m) => m.Modal),
   { ssr: false },
@@ -137,6 +138,7 @@ export function Header({
           </Link>
         </nav>
         <div className="header-actions">
+          <ThemeToggle />
           <button aria-label="Search" onClick={() => setSearch(true)}>
             <Search size={18} />
           </button>

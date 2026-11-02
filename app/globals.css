@@ -11,6 +11,98 @@
   --gold: #d2b477;
   --line: #373539;
   --muted: #bbb7b0;
+  --button-text: #111113;
+  --button-hover: #e4ca96;
+  --button-cream: #ead8b4;
+  --outline: #77716a;
+  --bar-background: #101012;
+  --bar-text: #f2f0e7;
+  --bar-border: #858b76;
+  --header-background: rgba(9, 9, 11, 0.97);
+  --image-badge: #141416e8;
+  --raised-text: #fff;
+  --banner-icon: #c5ae81;
+  --banner-label: #d6c9aa;
+  --banner-text: #d0d4c9;
+  --field-error: #f5a99b;
+  --success-background: #19271e;
+  --success-text: #b9ddbf;
+  --error-background: #321d1b;
+  --error-text: #f5b5a9;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --background: #f8f6f1;
+  --surface: #eeeee5;
+  --surface-raised: #fffdf7;
+  --ink: #292b25;
+  --gold: #806329;
+  --line: #deded3;
+  --muted: #65665e;
+  --button-text: #fffdf7;
+  --button-hover: #6a501f;
+  --button-cream: #806329;
+  --outline: #8b887d;
+  --bar-background: #eeeee5;
+  --bar-text: #292b25;
+  --bar-border: #b6b09e;
+  --header-background: rgba(248, 246, 241, 0.97);
+  --image-badge: #f8f6f1df;
+  --raised-text: #292b25;
+  --banner-icon: #806329;
+  --banner-label: #716344;
+  --banner-text: #65665e;
+  --field-error: #a24035;
+  --success-background: #e9edde;
+  --success-text: #3d5035;
+  --error-background: #f4e2dc;
+  --error-text: #8d3427;
+}
+/* Keep the existing dark design intact; adjust only theme-specific colors. */
+:root[data-theme="light"] .text-stone-300 {
+  color: var(--muted);
+}
+:root[data-theme="light"] .bg-surface > svg,
+:root[data-theme="light"] .bg-surface em {
+  color: var(--gold);
+}
+.header-actions .theme-toggle .theme-toggle-moon,
+:root[data-theme="light"] .header-actions .theme-toggle .theme-toggle-sun {
+  display: none;
+}
+:root[data-theme="light"] .header-actions .theme-toggle .theme-toggle-moon {
+  display: block;
+}
+/* Do not animate the initial theme selection before the first paint. */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-theme]
+    :is(
+      body,
+      header,
+      footer,
+      section,
+      .panel,
+      .page-intro,
+      .mega,
+      .nav,
+      .note,
+      .cookie,
+      .dialog-content,
+      input,
+      select,
+      textarea,
+      h1,
+      h2,
+      h3,
+      p,
+      em,
+      small
+    ) {
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
 }
 * {
   box-sizing: border-box;
@@ -129,37 +221,37 @@ img {
 }
 .btn-dark {
   background: var(--gold);
-  color: #111113;
+  color: var(--button-text);
 }
 .btn-dark:hover {
-  background: #e4ca96;
+  background: var(--button-hover);
 }
 .btn-cream {
-  background: #ead8b4;
-  color: #111113;
+  background: var(--button-cream);
+  color: var(--button-text);
 }
 .btn-outline {
-  border-color: #77716a;
+  border-color: var(--outline);
   background: transparent;
   color: var(--ink);
 }
 .btn-gold {
   background: var(--gold);
-  color: #111113;
+  color: var(--button-text);
 }
 .text-link {
   display: inline-flex;
   align-items: center;
   gap: 24px;
   padding: 8px 0;
-  border-bottom: 1px solid #77716a;
+  border-bottom: 1px solid var(--outline);
   font-size: 1rem;
   font-weight: 600;
 }
 .offerbar {
   height: 33px;
-  background: #101012;
-  color: #f2f0e7;
+  background: var(--bar-background);
+  color: var(--bar-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -181,7 +273,7 @@ img {
   gap: 5px;
   align-items: center;
   margin-left: 14px;
-  border-bottom: 1px solid #858b76;
+  border-bottom: 1px solid var(--bar-border);
 }
 .header {
   height: 97px;
@@ -190,7 +282,7 @@ img {
   align-items: center;
   justify-content: space-between;
   gap: 30px;
-  background: rgba(9, 9, 11, 0.97);
+  background: var(--header-background);
   position: sticky;
   top: 0;
   z-index: 40;
@@ -301,7 +393,7 @@ img {
   height: 620px;
   position: relative;
   color: #fff;
-  background: #101012;
+  background: var(--bar-background);
 }
 .hero > img {
   object-position: center 56%;
@@ -507,7 +599,7 @@ img {
   position: absolute;
   left: 14px;
   top: 14px;
-  background: #141416e8;
+  background: var(--image-badge);
   border-radius: 50%;
   height: 27px;
   width: 27px;
@@ -687,28 +779,28 @@ img {
 }
 .welcome-banner {
   margin: 65px 8.2% 0;
-  background: #1e1e21;
-  color: #fff;
+  background: var(--surface-raised);
+  color: var(--raised-text);
   padding: 35px 38px;
   display: flex;
   align-items: center;
   gap: 28px;
 }
 .welcome-banner > svg {
-  color: #c5ae81;
+  color: var(--banner-icon);
   stroke-width: 1;
 }
 .welcome-banner small {
   font-size: 1rem;
   letter-spacing: 1.8px;
-  color: #d6c9aa;
+  color: var(--banner-label);
 }
 .welcome-banner h2 {
   font-size: 2.0625rem;
   margin: 8px 0;
 }
 .welcome-banner p {
-  color: #d0d4c9;
+  color: var(--banner-text);
   font-size: 1rem;
 }
 .welcome-banner .btn {
@@ -911,8 +1003,8 @@ footer {
   bottom: 28px;
   right: 25px;
   z-index: 45;
-  background: #1e1e21;
-  color: white;
+  background: var(--surface-raised);
+  color: var(--raised-text);
   border: 3px solid var(--line);
   border-radius: 40px;
   display: flex;
@@ -1061,7 +1153,7 @@ footer {
 }
 .filter.active {
   background: var(--gold);
-  color: #111113;
+  color: var(--button-text);
   border-color: var(--gold);
 }
 .grid-3 {
@@ -1260,20 +1352,20 @@ select.input {
   grid-column: 1/-1;
 }
 .field-error {
-  color: #f5a99b;
+  color: var(--field-error);
   font-size: 1rem;
 }
 .message {
   padding: 13px;
-  background: #19271e;
-  color: #b9ddbf;
+  background: var(--success-background);
+  color: var(--success-text);
   margin: 15px 0;
   font-size: 1rem;
 }
 .error-message {
   padding: 13px;
-  background: #321d1b;
-  color: #f5b5a9;
+  background: var(--error-background);
+  color: var(--error-text);
   margin: 15px 0;
   font-size: 1rem;
 }
@@ -1380,8 +1472,8 @@ select.input {
   font-size: 1rem;
 }
 .slots button.selected {
-  background: #1e1e21;
-  color: #fff;
+  background: var(--surface-raised);
+  color: var(--raised-text);
 }
 .booking-service-list {
   max-height: 500px;
@@ -2193,8 +2285,8 @@ td button {
     align-items: center;
     justify-content: center;
     gap: 35px;
-    background: #101012;
-    color: #fff;
+    background: var(--bar-background);
+    color: var(--raised-text);
     height: 53px;
     font-size: 1rem;
   }

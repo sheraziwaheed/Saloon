@@ -4,11 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        ivory: "#f4efe6",
-        ink: "#f4efe6",
-        gold: "#d2b477",
-        background: "#09090b",
-        surface: "#141416",
+        ivory: "var(--ink)",
+        ink: "var(--ink)",
+        gold: "var(--gold)",
+        background: "var(--background)",
+        surface: "var(--surface)",
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],

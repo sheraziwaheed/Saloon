@@ -44,8 +44,18 @@ export default function RootLayout({
 }) {
   const brand = site;
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+    <html
+      lang="en"
+      className={`${serif.variable} ${sans.variable}`}
+      suppressHydrationWarning
+    >
       <body>
+        <script
+          id="theme-init"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var saved;try{saved=localStorage.getItem('luxe-theme')}catch(e){}document.documentElement.dataset.theme=saved==='light'||saved==='dark'?saved:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'})()`,
+          }}
+        />
         <a className="skip-link" href="#main">
           Skip to content
         </a>
