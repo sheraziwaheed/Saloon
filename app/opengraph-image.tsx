@@ -9,12 +9,12 @@ export default function Image() {
       style={{
         height: "100%",
         width: "100%",
-        background: "#eeeee5",
+        background: "#09090b",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        color: "#30382d",
+        color: "#f4efe6",
       }}
     >
       <div style={{ fontSize: 100, letterSpacing: 18 }}>LUXE</div>
@@ -22,7 +22,7 @@ export default function Image() {
       <div style={{ fontSize: 42, marginTop: 65 }}>
         A little time. Entirely yours.
       </div>
-      <div style={{ fontSize: 18, marginTop: 35, color: "#8a7654" }}>
+      <div style={{ fontSize: 18, marginTop: 35, color: "#d2b477" }}>
         MAYFAIR & CHELSEA · LONDON
       </div>
     </div>,

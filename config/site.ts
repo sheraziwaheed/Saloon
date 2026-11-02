@@ -7,7 +7,11 @@ export const site = {
   whatsapp: "442079460832",
   currency: "GBP",
   timezone: "Europe/London",
-  colors: { ivory: "#f8f6f1", charcoal: "#272821", gold: "#a58652" },
+  colors: {
+    ivory: "#f4efe6",
+    charcoal: "#09090b",
+    gold: "#d2b477",
+  },
   socials: {
     instagram: "https://instagram.com/",
     facebook: "https://facebook.com/",

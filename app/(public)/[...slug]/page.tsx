@@ -119,7 +119,7 @@ export default async function PublicPage({
                   offer honest advice and tailor your treatment to what feels
                   right for you.
                 </p>
-                <ul className="list-disc pl-4 text-base text-stone-600 space-y-2">
+                <ul className="list-disc pl-4 text-base text-stone-300 space-y-2">
                   <li>Personalised consultation included</li>
                   <li>Thoughtfully selected professional products</li>
                   <li>Advice to make your results last at home</li>
@@ -580,7 +580,7 @@ export default async function PublicPage({
         "A fresh look. A favourite ritual. A moment entirely theirs.";
       content = (
         <div className="grid-2">
-          <div className="bg-[#343d30] text-ivory p-12 flex flex-col justify-center text-center min-h-[350px]">
+          <div className="bg-surface text-ivory p-12 flex flex-col justify-center text-center min-h-[350px]">
             <Gift className="mx-auto text-[#c2ac80]" size={34} />
             <span className="font-serif text-6xl my-7 tracking-[8px]">
               LUXE
