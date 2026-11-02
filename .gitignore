@@ -2,9 +2,6 @@ node_modules/
 .next/
 .next-dev/
 out/
-.env
-.env.local
-.env.*
 !.env.example
 *.db
 *.db-*
@@ -13,3 +10,4 @@ out/
 *.tsbuildinfo
 test-results/
 audit-report.json
+config.bat

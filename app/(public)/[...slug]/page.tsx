@@ -357,6 +357,9 @@ export default async function PublicPage({
                 Our promise is simple. Honest advice, expert hands, and a little
                 everyday luxury that leaves you feeling like you.
               </p>
+              <p>
+                Luxe Salon is a polished, boutique-style website for a London beauty and wellness brand with branches in Mayfair and Chelsea. It presents six service categories (hair and colour, skin and facials, nails and beauty, makeup and bridal, spa and massage, and men&apos;s grooming) with starting prices, supported by a team showcase, photo gallery, client reviews, FAQs, a journal, gift vouchers, a rewards programme, an online shop with a cart, a newsletter signup, WhatsApp chat, and branch-specific booking with a first-visit discount. Its clean, calming design and conversion-focused structure give it strong potential to grow into a complete digital home for the salon, with live appointment scheduling and payments, real client reviews and photography, automated reminders linked to the rewards programme, and retail e-commerce, all while helping the brand rank locally for searches in Mayfair and Chelsea.
+              </p>
               <Link className="text-link" href="/team">
                 Meet the people behind Luxe <ArrowUpRight size={15} />
               </Link>
