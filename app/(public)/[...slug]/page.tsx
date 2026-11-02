@@ -1,4 +1,4 @@
-﻿import { safeJson } from "@/lib/json";
+import { safeJson } from "@/lib/json";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,8 +13,19 @@ import {
   Gift,
   Leaf,
 } from "lucide-react";
-import { db } from "@/lib/db";
-import { images, money, branches } from "@/lib/catalog";
+import { Suspense } from "react";
+import {
+  images,
+  money,
+  branches,
+  categories,
+  services as catalogServices,
+  staff,
+  products,
+  posts,
+  reviews,
+  faqs,
+} from "@/lib/catalog";
 import { PageIntro, BookingCTA } from "@/components/sections/shared";
 import { FaqList } from "@/components/sections/faq-list";
 import {
@@ -24,9 +35,9 @@ import {
   ContactForm,
   AddToCart,
   VoucherForm,
+  JournalBrowser,
 } from "@/components/sections/interactive";
 import { site } from "@/config/site";
-export const dynamic = "force-dynamic";
 const titles: Record<string, string> = {
   services: "Your beauty. Your way.",
   pricing: "Beautiful care. Clear prices.",
@@ -56,17 +67,11 @@ export async function generateMetadata({
   let title = titles[slug[0]] || "Luxe Salon";
   if (slug[1]) {
     if (slug[0] === "services")
-      title =
-        (await db.service.findUnique({ where: { slug: slug[1] } }))?.name ||
-        title;
+      title = catalogServices.find((s) => s.slug === slug[1])?.name || title;
     if (slug[0] === "shop")
-      title =
-        (await db.product.findUnique({ where: { slug: slug[1] } }))?.name ||
-        title;
+      title = products.find((p) => p.slug === slug[1])?.name || title;
     if (slug[0] === "blog")
-      title =
-        (await db.blogPost.findUnique({ where: { slug: slug[1] } }))?.title ||
-        title;
+      title = posts.find((p) => p.slug === slug[1])?.title || title;
   }
   return {
     title,
@@ -76,22 +81,17 @@ export async function generateMetadata({
 }
 export default async function PublicPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string[] }>;
-  searchParams: Promise<{ category?: string }>;
 }) {
   const { slug } = await params;
   const [page, detail] = slug;
-  const q = await searchParams;
   if (slug.length > 2) notFound();
   if (detail) {
     if (page === "services") {
-      const s = await db.service.findUnique({
-        where: { slug: detail },
-        include: { category: true },
-      });
-      if (!s || !s.active) notFound();
+      const s = catalogServices.find((s) => s.slug === detail);
+      if (!s) notFound();
+      const category = categories.find((c) => c.id === s.categoryId)!;
       return (
         <>
           <div className="page-content">
@@ -103,7 +103,7 @@ export default async function PublicPage({
                 <Image src={s.image} alt={s.name} fill priority sizes="50vw" />
               </div>
               <div className="detail-copy">
-                <small>{s.category.name.toUpperCase()}</small>
+                <small>{category.name.toUpperCase()}</small>
                 <h1>{s.name}</h1>
                 <p>{s.description}</p>
                 <div className="meta">
@@ -162,11 +162,9 @@ export default async function PublicPage({
       );
     }
     if (page === "team") {
-      const s = await db.staff.findUnique({
-        where: { id: detail },
-        include: { branch: true },
-      });
+      const s = staff.find((s) => s.id === detail);
       if (!s) notFound();
+      const branch = branches.find((b) => b.id === s.branchId)!;
       return (
         <>
           <div className="page-content detail-layout">
@@ -178,7 +176,7 @@ export default async function PublicPage({
               <h1>{s.name}</h1>
               <p>{s.bio}</p>
               <p>
-                Find {s.name.split(" ")[0]} at our {s.branch.name} salon. Every
+                Find {s.name.split(" ")[0]} at our {branch.name} salon. Every
                 appointment begins with a conversation about you, so your care
                 feels personal from the very first moment.
               </p>
@@ -195,7 +193,7 @@ export default async function PublicPage({
       );
     }
     if (page === "shop") {
-      const p = await db.product.findUnique({ where: { slug: detail } });
+      const p = products.find((p) => p.slug === detail);
       if (!p) notFound();
       return (
         <div className="page-content">
@@ -214,7 +212,7 @@ export default async function PublicPage({
                 {money(p.price)}{" "}
                 <span>
                   {p.stock > 0
-                    ? "Available for delivery"
+                    ? "Ask our team about availability"
                     : "Currently out of stock"}
                 </span>
               </div>
@@ -235,7 +233,7 @@ export default async function PublicPage({
       );
     }
     if (page === "blog") {
-      const p = await db.blogPost.findUnique({ where: { slug: detail } });
+      const p = posts.find((p) => p.slug === detail);
       if (!p) notFound();
       return (
         <>
@@ -248,13 +246,7 @@ export default async function PublicPage({
             <div className="relative h-[400px] mb-10">
               <Image src={p.image} alt={p.title} fill sizes="800px" />
             </div>
-            <small>
-              BY THE LUXE TEAM ·{" "}
-              {p.publishedAt.toLocaleDateString("en-GB", {
-                month: "long",
-                year: "numeric",
-              })}
-            </small>
+            <small>BY THE LUXE TEAM · {"THE LUXE JOURNAL"}</small>
             <p>{p.content}</p>
             <Link className="text-link" href="/blog">
               ← Back to the journal
@@ -274,7 +266,7 @@ export default async function PublicPage({
   switch (page) {
     case "services":
     case "pricing": {
-      const services = await db.service.findMany({ where: { active: true } });
+      const services = catalogServices;
       eyebrow =
         page === "pricing"
           ? "THOUGHTFUL CARE, NO SURPRISES"
@@ -285,11 +277,13 @@ export default async function PublicPage({
           : "From a fresh chapter for your hair to a well-deserved moment of calm. Find what feels like you.";
       content = (
         <>
-          <ServicesBrowser
-            services={services}
-            initial={q.category || "all"}
-            pricing={page === "pricing"}
-          />
+          <Suspense fallback={<p>Loading services…</p>}>
+            <ServicesBrowser
+              services={services}
+              initial="all"
+              pricing={page === "pricing"}
+            />
+          </Suspense>
           {page === "pricing" && (
             <p className="note">
               Prices include consultation and applicable taxes. Extended
@@ -302,7 +296,7 @@ export default async function PublicPage({
       break;
     }
     case "team": {
-      const team = await db.staff.findMany({ include: { branch: true } });
+      const team = staff;
       eyebrow = "A PERSONAL TOUCH. A PASSIONATE TEAM.";
       content = (
         <>
@@ -321,7 +315,7 @@ export default async function PublicPage({
                   <ArrowUpRight size={17} />
                 </h3>
                 <p>
-                  {s.role} · {s.branch.name}
+                  {s.role} · {branches.find((b) => b.id === s.branchId)?.name}
                 </p>
               </Link>
             ))}
@@ -401,10 +395,10 @@ export default async function PublicPage({
       break;
     case "gallery":
       eyebrow = "THE LITTLE DETAILS. THE LOVELY MOMENTS.";
-      content = <Gallery items={await db.galleryItem.findMany()} />;
+      content = <Gallery />;
       break;
     case "reviews": {
-      const rs = await db.review.findMany();
+      const rs = reviews;
       eyebrow = "THE LOVELIEST KIND OF FEEDBACK";
       content = (
         <>
@@ -414,7 +408,7 @@ export default async function PublicPage({
           </p>
           <div className="grid-2">
             {rs.map((r) => (
-              <article className="panel" key={r.id}>
+              <article className="panel" key={r.name}>
                 <div className="stars">{"★".repeat(r.rating)}</div>
                 <blockquote className="font-serif text-2xl my-5">
                   “{r.text}”
@@ -438,17 +432,17 @@ export default async function PublicPage({
               [
                 Heart,
                 "Your first little hello",
-                "Create your account and start your Luxe story.",
+                "Ask our team about joining the Luxe circle.",
               ],
               [
                 Sparkles,
                 "Every visit, a little more",
-                "Earn one point for every £1 spent on completed salon services.",
+                "Discover member offers and little extras for regular visits.",
               ],
               [
                 Gift,
                 "A treat, on us",
-                "Collect 500 points and ask our team about your £5 salon credit.",
+                "Our team can explain current rewards and how to take part.",
               ],
             ].map(([Icon, title, text]) => {
               const I = Icon as typeof Heart;
@@ -462,13 +456,11 @@ export default async function PublicPage({
             })}
           </div>
           <div className="text-center mt-10">
-            <Link href="/account" className="btn btn-dark">
+            <Link href="/contact" className="btn btn-dark">
               Join the Luxe circle <ArrowUpRight size={15} />
             </Link>
             <p className="note">
-              Points appear after your appointment is marked complete.
-              Redemption is arranged with the salon team. Points cannot be
-              exchanged for cash.
+              Membership and rewards are arranged directly with the salon team.
             </p>
           </div>
         </>
@@ -478,48 +470,20 @@ export default async function PublicPage({
       eyebrow = "THE LUXE EDIT";
       description =
         "Salon favourites and everyday essentials. Chosen with care, for your rituals at home.";
-      content = <ShopBrowser products={await db.product.findMany()} />;
+      content = <ShopBrowser products={products} />;
       break;
     case "blog": {
-      const posts = await db.blogPost.findMany({
-        orderBy: { publishedAt: "desc" },
-      });
       eyebrow = "INSPIRATION, THOUGHTFULLY SHARED";
       description =
         "Expert tips, fresh ideas and a little behind the scenes. Make yourself comfortable.";
       content = (
-        <div className="grid-3">
-          {posts
-            .filter(
-              (p) =>
-                !q.category ||
-                p.category.toLowerCase() === q.category.toLowerCase(),
-            )
-            .map((p) => (
-              <article key={p.id}>
-                <Link href={`/blog/${p.slug}`} className="card-image">
-                  <Image src={p.image} alt={p.title} fill sizes="33vw" />
-                </Link>
-                <div className="card-body">
-                  <Link className="badge" href={`/blog?category=${p.category}`}>
-                    {p.category}
-                  </Link>
-                  <h3>
-                    <Link href={`/blog/${p.slug}`}>{p.title}</Link>
-                  </h3>
-                  <p>{p.excerpt}</p>
-                  <Link className="text-link" href={`/blog/${p.slug}`}>
-                    Take a little read <ArrowUpRight size={14} />
-                  </Link>
-                </div>
-              </article>
-            ))}
-        </div>
+        <Suspense fallback={<p>Loading journal…</p>}>
+          <JournalBrowser />
+        </Suspense>
       );
       break;
     }
     case "faqs": {
-      const faqs = await db.faq.findMany();
       eyebrow = "BEFORE YOU SETTLE IN";
       description =
         "A few things you might like to know. And if you need anything else, we’re a call away.";
@@ -527,7 +491,7 @@ export default async function PublicPage({
         <div className="prose">
           <div className="faq-list">
             {faqs.map((f, i) => (
-              <details key={f.id}>
+              <details key={f.question}>
                 <summary>
                   <span className="faq-num">0{i + 1}</span>
                   {f.question}
@@ -665,8 +629,8 @@ export default async function PublicPage({
               {p.replaceAll("-", " ")}
             </Link>
           ))}
-          <Link href="/booking">Online booking</Link>
-          <Link href="/account">Your account</Link>
+          <Link href="/booking">Request an appointment</Link>
+          <Link href="/contact">Contact the team</Link>
           <Link href="/cart">Shopping bag</Link>
         </div>
       );
@@ -689,10 +653,10 @@ export default async function PublicPage({
               </p>
               <h2>Changes and cancellations</h2>
               <p>
-                You may reschedule or cancel using your secure booking link up
-                to 24 hours before the appointment. For later changes, contact
-                the salon. Deposits and missed-appointment charges must be
-                explained and agreed before payment.
+                Contact the salon directly to change or cancel your appointment.
+                Please give at least 24 hours’ notice. Deposits and
+                missed-appointment charges must be explained and agreed before
+                payment.
               </p>
               <h2>Prices and consultation</h2>
               <p>
@@ -705,10 +669,9 @@ export default async function PublicPage({
             <>
               <h2>Information you share</h2>
               <p>
-                We store contact details, appointment information, order records
-                and messages so we can provide salon services. Account passwords
-                are hashed. Payment details are processed by Stripe and are not
-                stored by the salon.
+                Contact details and requests submitted through our online form
+                are processed by Jotform so our salon team can respond. This
+                website does not create accounts or collect card details.
               </p>
               <h2>Your choices</h2>
               <p>
@@ -722,19 +685,21 @@ export default async function PublicPage({
             <>
               <h2>Essential cookies and local storage</h2>
               <p>
-                Sign-in cookies keep your session secure. Browser storage
-                remembers your shopping bag, wishlist and cookie choice. These
-                support the features you choose to use.
+                Browser storage remembers your product selections, wishlist and
+                cookie choice. These support the features you choose to use.
               </p>
               <h2>External services</h2>
               <p>
-                Google Maps, linked social sites and payment providers have
-                their own privacy policies. This app does not load advertising
-                analytics.
+                Jotform, Google Maps and linked social sites have their own
+                privacy policies. This app does not load advertising analytics.
               </p>
             </>
           ) : (
             <>
+              <p>
+                Product requests are inquiries. Orders and payment arrangements
+                are confirmed directly with the salon team.
+              </p>
               <h2>Shop returns</h2>
               <p>
                 Contact our team within 14 days of receiving an order to arrange
@@ -783,4 +748,14 @@ export default async function PublicPage({
       ].includes(page) && <BookingCTA />}
     </>
   );
+}
+
+export function generateStaticParams() {
+  return [
+    ...Object.keys(titles).map((page) => ({ slug: [page] })),
+    ...catalogServices.map((s) => ({ slug: ["services", s.slug] })),
+    ...staff.map((s) => ({ slug: ["team", s.id] })),
+    ...products.map((p) => ({ slug: ["shop", p.slug] })),
+    ...posts.map((p) => ({ slug: ["blog", p.slug] })),
+  ];
 }

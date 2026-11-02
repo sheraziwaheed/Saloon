@@ -1,4 +1,4 @@
-﻿import { chromium } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import fs from 'node:fs';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 const page=await browser.newPage();
@@ -8,7 +8,7 @@ const results=[];
 try{
  for(const width of [320,390,768,1440,1920]){
   await page.setViewportSize({width,height:1000});
-  for(const route of ['/','/account','/pricing','/booking']){
+  for(const route of ['/','/contact','/pricing','/booking']){
    await page.goto(base+route,{waitUntil:'networkidle'});
    // Check the current stylesheet against the existing preview without starting another server.
    await page.addStyleTag({path:'app/globals.css'});
@@ -27,10 +27,9 @@ try{
    });
    results.push({width,route,...state});
    if(width===390&&route==='/')await page.screenshot({path:'test-results/medium-type-mobile.png'});
-   if(width===1440&&route==='/account')await page.screenshot({path:'test-results/medium-type-account.png'});
+   if(width===1440&&route==='/contact')await page.screenshot({path:'test-results/medium-type-account.png'});
   }
  }
  console.log(JSON.stringify(results,null,2));
  if(results.some(r=>r.overflow||r.small.length))process.exitCode=1;
 }finally{await browser.close();}
-

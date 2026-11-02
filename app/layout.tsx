@@ -1,11 +1,9 @@
-﻿import { safeJson } from "@/lib/json";
+import { safeJson } from "@/lib/json";
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Header, Footer } from "@/components/sections/shell";
 import { site } from "@/config/site";
-import { getSetting } from "@/lib/settings";
 import "./globals.css";
-export const dynamic = "force-dynamic";
 const serif = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -17,9 +15,9 @@ const sans = Manrope({
   variable: "--font-sans",
   display: "swap",
 });
-export async function generateMetadata(): Promise<Metadata> {
-  const seo = await getSetting("seoDefaults");
-  const business = await getSetting("business");
+export function generateMetadata(): Metadata {
+  const seo = { title: "", description: "" };
+  const business = site;
   return {
     metadataBase: new URL(site.url),
     title: {
@@ -39,23 +37,19 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [business, offer] = await Promise.all([
-    getSetting("business"),
-    getSetting("offers"),
-  ]);
-  const brand = { ...site, ...business };
+  const brand = site;
   return (
     <html lang="en" className={`${serif.variable} ${sans.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header site={brand} offer={offer} />
+        <Header site={brand} />
         <main id="main">{children}</main>
         <Footer site={brand} />
         <script

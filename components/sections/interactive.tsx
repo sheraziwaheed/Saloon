@@ -1,6 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { LeadForm } from "./lead-form";
+import { LeadRequest } from "./lead-request";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -11,6 +14,7 @@ import {
   money,
   products as defaultProducts,
   images,
+  posts,
 } from "@/lib/catalog";
 import { ServiceCard } from "./shared";
 import { Button } from "@/components/ui/button";
@@ -23,8 +27,10 @@ export function ServicesBrowser({
   pricing?: boolean;
   services?: typeof defaultServices;
 }) {
-  const [active, setActive] = useState(initial);
-  useEffect(() => setActive(initial), [initial]);
+  const query = useSearchParams();
+  const initialCategory = query.get("category") || initial;
+  const [active, setActive] = useState(initialCategory);
+  useEffect(() => setActive(initialCategory), [initialCategory]);
   const filtered = services.filter(
     (s) => active === "all" || s.categoryId === active,
   );
@@ -121,11 +127,11 @@ export function AddToCart({ id }: { id: string }) {
     >
       {added ? (
         <>
-          <Check size={13} /> Added to bag
+          <Check size={13} /> Added to request
         </>
       ) : (
         <>
-          Add to bag <ArrowUpRight size={13} />
+          Add to request <ArrowUpRight size={13} />
         </>
       )}
     </Button>
@@ -356,72 +362,17 @@ export function Gallery({
   );
 }
 export function ContactForm() {
-  const [message, setMessage] = useState(""),
-    [pending, setPending] = useState(false);
   return (
-    <form
-      className="panel"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setPending(true);
-        const form = e.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        try {
-          const r = await fetch("/api/forms", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...data, type: "contact" }),
-          });
-          const d = await r.json();
-          setMessage(
-            r.ok ? "Thank you. Your message has reached our team." : d.error,
-          );
-          if (r.ok) form.reset();
-        } catch {
-          setMessage("Unable to send. Please try again.");
-        }
-        setPending(false);
-      }}
-    >
-      <h2>A little hello.</h2>
-      <div className="form-grid">
-        <label className="field">
-          Your name
-          <input name="name" required minLength={2} />
-        </label>
-        <label className="field">
-          Email address
-          <input type="email" name="email" required />
-        </label>
-        <label className="field wide">
-          Your salon
-          <select name="branchId">
-            <option value="mayfair">Mayfair</option>
-            <option value="chelsea">Chelsea</option>
-          </select>
-        </label>
-        <label className="field wide">
-          How can we help?
-          <textarea name="message" required minLength={10} />
-        </label>
-      </div>
-      {message && (
-        <p className="message" role="status">
-          {message}
-        </p>
-      )}
-      <Button className="mt-5" disabled={pending}>
-        {pending ? "Sending…" : "Send your message"} <ArrowUpRight size={14} />
-      </Button>
-    </form>
+    <Suspense fallback={<p>Loading request form…</p>}>
+      <LeadRequest />
+    </Suspense>
   );
 }
 export function VoucherForm() {
   const [amount, setAmount] = useState(50);
   return (
-    <div className="panel">
-      <h2>A gift of a little time.</h2>
-      <label className="field">
+    <div>
+      <label className="field mb-5">
         Choose your gift
         <select
           value={amount}
@@ -434,16 +385,47 @@ export function VoucherForm() {
           ))}
         </select>
       </label>
-      <p className="my-5">
-        Our team will help arrange your voucher and presentation. Vouchers are
-        valid for 12 months.
-      </p>
-      <a
-        href={`mailto:hello@luxesalon.example?subject=${encodeURIComponent(`Luxe gift voucher — £${amount}`)}`}
-        className="btn btn-dark"
-      >
-        Arrange your gift <ArrowUpRight size={15} />
-      </a>
+      <LeadForm
+        title="Arrange your gift"
+        context={{ requestType: "voucher", amount: money(amount * 100) }}
+      />
+    </div>
+  );
+}
+
+export function JournalBrowser() {
+  const query = useSearchParams();
+  const category = query.get("category");
+  const filtered = posts.filter(
+    (p) => !category || p.category.toLowerCase() === category.toLowerCase(),
+  );
+  return (
+    <div className="grid-3">
+      {filtered.map((p) => (
+        <article key={p.id}>
+          <Link href={`/blog/${p.slug}`} className="card-image">
+            <Image
+              src={p.image}
+              alt={p.title}
+              fill
+              sizes="(max-width:650px) 100vw,33vw"
+            />
+          </Link>
+          <div className="card-body">
+            <Link className="badge" href={`/blog?category=${p.category}`}>
+              {p.category}
+            </Link>
+            <h3>
+              <Link href={`/blog/${p.slug}`}>{p.title}</Link>
+            </h3>
+            <p>{p.excerpt}</p>
+            <Link className="text-link" href={`/blog/${p.slug}`}>
+              Take a little read <ArrowUpRight size={14} />
+            </Link>
+          </div>
+        </article>
+      ))}
+      {!filtered.length && <p>No journal entries in this category yet.</p>}
     </div>
   );
 }

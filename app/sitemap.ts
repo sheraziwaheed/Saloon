@@ -1,14 +1,8 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/config/site";
-import { db } from "@/lib/db";
-export const dynamic = "force-dynamic";
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [services, posts, products, staff] = await Promise.all([
-    db.service.findMany({ where: { active: true }, select: { slug: true } }),
-    db.blogPost.findMany({ select: { slug: true } }),
-    db.product.findMany({ select: { slug: true } }),
-    db.staff.findMany({ select: { id: true } }),
-  ]);
+import { services, posts, products, staff } from "@/lib/catalog";
+export const dynamic = "force-static";
+export default function sitemap(): MetadataRoute.Sitemap {
   return [
     "",
     "services",

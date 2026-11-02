@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Minus, Plus, ShoppingBag, ArrowUpRight } from "lucide-react";
 import { money, products as fallback } from "@/lib/catalog";
 import { readCart, type CartItem } from "./interactive";
-import { Button } from "@/components/ui/button";
+import { LeadForm } from "./lead-form";
 export function Cart({
   checkout = false,
   products = fallback,
@@ -14,9 +14,7 @@ export function Cart({
   products?: typeof fallback;
 }) {
   const [cart, setCart] = useState<CartItem[]>([]),
-    [ready, setReady] = useState(false),
-    [error, setError] = useState(""),
-    [pending, setPending] = useState(false);
+    [ready, setReady] = useState(false);
   useEffect(() => {
     setCart(readCart());
     setReady(true);
@@ -43,6 +41,7 @@ export function Cart({
         : cart.filter((i) => i.id !== id);
     setCart(next);
     localStorage.setItem("luxe-cart", JSON.stringify(next));
+    window.dispatchEvent(new Event("cart-updated"));
   }
   if (!ready) return <p role="status">A little moment…</p>;
   if (!items.length)
@@ -103,64 +102,24 @@ export function Cart({
             <b>{money(total)}</b>
           </div>
           <p className="my-3 text-base">
-            Complimentary delivery on this demo catalogue.
+            Estimated total. Our team will confirm pricing and availability.
           </p>
           {!checkout ? (
             <Link className="btn btn-dark" href="/checkout">
-              Continue to checkout <ArrowUpRight size={15} />
+              Request these products <ArrowUpRight size={15} />
             </Link>
           ) : (
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setError("");
-                setPending(true);
-                const data = new FormData(e.currentTarget);
-                try {
-                  const r = await fetch("/api/checkout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      items: cart,
-                      email: data.get("email"),
-                      coupon: data.get("coupon") || undefined,
-                    }),
-                  });
-                  const d = await r.json();
-                  if (!r.ok) throw new Error(d.error);
-                  if (d.url) window.location.assign(d.url);
-                } catch (e) {
-                  setError(
-                    e instanceof Error ? e.message : "Please try again.",
-                  );
-                  setPending(false);
-                }
+            <LeadForm
+              title="Ask about your selections"
+              context={{
+                requestType: "product",
+                products: items
+                  .map(
+                    ({ item, product }) => `${product.name} × ${item.quantity}`,
+                  )
+                  .join("; "),
               }}
-            >
-              <label className="field">
-                Email for your order
-                <input type="email" name="email" required />
-              </label>
-              <label className="field my-4">
-                Offer code
-                <input name="coupon" placeholder="Optional" />
-              </label>
-              <Button disabled={pending}>
-                {pending
-                  ? "Opening secure checkout…"
-                  : "Secure Stripe checkout"}{" "}
-                <ArrowUpRight size={15} />
-              </Button>
-              <p className="text-base mt-3">
-                Test checkout only. Card details are entered securely with
-                Stripe.
-              </p>
-            </form>
-          )}
-          {error && (
-            <p role="alert" className="error-message">
-              {error}
-            </p>
+            />
           )}
         </div>
       </div>

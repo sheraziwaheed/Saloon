@@ -1,42 +1,22 @@
-import { BookingFlow } from "@/components/sections/booking-flow";
+import { Suspense } from "react";
+import { LeadRequest } from "@/components/sections/lead-request";
 import { PageIntro } from "@/components/sections/shared";
-import { db } from "@/lib/db";
-import { getSetting } from "@/lib/settings";
-export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Book your moment",
+  title: "Request an appointment",
   alternates: { canonical: "/booking" },
 };
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ branch?: string; service?: string }>;
-}) {
-  const q = await searchParams;
-  const rules = await getSetting("bookingRules");
-  const [services, staff, addOns, branches] = await Promise.all([
-    db.service.findMany({ where: { active: true } }),
-    db.staff.findMany(),
-    db.addOn.findMany(),
-    db.branch.findMany(),
-  ]);
+export default function Page() {
   return (
     <>
       <PageIntro
         eyebrow="YOUR TIME, BEAUTIFULLY SPENT"
-        title="Book your moment."
-        description="A few simple steps to a fresh look, a favourite ritual, or a well-deserved pause."
+        title="Request your moment."
+        description="Tell us what you have in mind. Our team will contact you to arrange a suitable appointment."
       />
       <div className="page-content">
-        <BookingFlow
-          rules={rules}
-          initialBranch={q.branch}
-          initialService={q.service}
-          services={services}
-          staff={staff}
-          addOns={addOns}
-          branches={branches}
-        />
+        <Suspense fallback={<p>Loading request form…</p>}>
+          <LeadRequest kind="appointment" />
+        </Suspense>
       </div>
     </>
   );

@@ -1,9 +1,8 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   Search,
-  UserRound,
   ShoppingBag,
   Menu,
   X,
@@ -16,7 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { categories } from "@/lib/catalog";
+import { categories, services, products, posts } from "@/lib/catalog";
 import { site as defaultSite } from "@/config/site";
 import { Button } from "@/components/ui/button";
 const Modal = dynamic(
@@ -33,26 +32,21 @@ export function Header({
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<{ name: string; href: string }[]>([]);
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(query)}`, {
-        signal: controller.signal,
-      })
-        .then((r) => r.json())
-        .then(setResults)
-        .catch(() => {});
-    }, 180);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query]);
+  const results =
+    query.trim().length < 2
+      ? []
+      : [
+          ...services.map((s) => ({
+            name: s.name,
+            href: `/services/${s.slug}`,
+          })),
+          ...products.map((p) => ({ name: p.name, href: `/shop/${p.slug}` })),
+          ...posts.map((p) => ({ name: p.title, href: `/blog/${p.slug}` })),
+        ]
+          .filter((item) =>
+            item.name.toLowerCase().includes(query.trim().toLowerCase()),
+          )
+          .slice(0, 12);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const f = () => setScrolled(window.scrollY > 30);
@@ -141,22 +135,11 @@ export function Header({
           <Link prefetch={false} onClick={() => setMenu(false)} href="/contact">
             Contact
           </Link>
-          <Link
-            prefetch={false}
-            className="nav-account"
-            onClick={() => setMenu(false)}
-            href="/account"
-          >
-            Your account
-          </Link>
         </nav>
         <div className="header-actions">
           <button aria-label="Search" onClick={() => setSearch(true)}>
             <Search size={18} />
           </button>
-          <Link prefetch={false} href="/account" aria-label="Your account">
-            <UserRound size={18} />
-          </Link>
           <Link prefetch={false} href="/cart" aria-label="Shopping bag">
             <ShoppingBag size={18} />
           </Link>
@@ -165,7 +148,7 @@ export function Header({
             className="btn btn-dark header-book"
             href="/booking"
           >
-            Book now <ArrowUpRight size={15} />
+            Request a visit <ArrowUpRight size={15} />
           </Link>
           <button
             className="menu-toggle"
@@ -179,30 +162,34 @@ export function Header({
       {search && (
         <Modal
           title="Find your next little luxury"
-          description="Search services and stories from Luxe."
+          description="Search services, products and stories from Luxe."
           closeLabel="Close search"
           onClose={() => setSearch(false)}
         >
           <input
             autoFocus
-            aria-label="Search services and journal"
+            aria-label="Search services, products and journal"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Try a facial, balayage, bridal…"
           />
           <div className="search-results">
             {query.length > 1 ? (
-              results.map((s) => (
-                <Link
-                  prefetch={false}
-                  key={s.href}
-                  href={s.href}
-                  onClick={() => setSearch(false)}
-                >
-                  {s.name}
-                  <ArrowUpRight size={16} />
-                </Link>
-              ))
+              results.length ? (
+                results.map((s) => (
+                  <Link
+                    prefetch={false}
+                    key={s.href}
+                    href={s.href}
+                    onClick={() => setSearch(false)}
+                  >
+                    {s.name}
+                    <ArrowUpRight size={16} />
+                  </Link>
+                ))
+              ) : (
+                <p>No matches yet. Try another search.</p>
+              )
             ) : (
               <p>
                 Explore a new look, a favourite ritual, or a little inspiration.
@@ -271,7 +258,7 @@ export function Footer({ site = defaultSite }: { site?: typeof defaultSite }) {
               ["Service pricing", "pricing"],
               ["Gift vouchers", "gift-vouchers"],
               ["Luxe rewards", "rewards"],
-              ["Your account", "account"],
+              ["Contact the team", "contact"],
             ].map(([n, p]) => (
               <Link prefetch={false} key={p} href={`/${p}`}>
                 {n}
@@ -288,9 +275,6 @@ export function Footer({ site = defaultSite }: { site?: typeof defaultSite }) {
             <Link prefetch={false} href="/faqs">
               Frequently asked questions
             </Link>
-            <span className="payments">
-              VISA &nbsp; mastercard &nbsp; Klarna.
-            </span>
           </div>
         </div>
         <div className="footer-bottom">
@@ -321,7 +305,7 @@ export function Footer({ site = defaultSite }: { site?: typeof defaultSite }) {
         <span>Let’s chat</span>
       </a>
       <Link prefetch={false} href="/booking" className="mobile-book">
-        Book your appointment <ArrowUpRight size={18} />
+        Request an appointment <ArrowUpRight size={18} />
       </Link>
       <Consent />
       <NewsletterPopup />
@@ -329,50 +313,13 @@ export function Footer({ site = defaultSite }: { site?: typeof defaultSite }) {
   );
 }
 export function Subscribe() {
-  const [message, setMessage] = useState("");
   return (
-    <form
-      className="subscribe"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const form = new FormData(e.currentTarget);
-        try {
-          const r = await fetch("/api/forms", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "newsletter",
-              email: form.get("email"),
-            }),
-          });
-          const d = await r.json();
-          setMessage(
-            r.ok
-              ? "You’re on the list. Use HELLO10 for 10% off your first shop order."
-              : d.error,
-          );
-        } catch {
-          setMessage("Please try again in a moment.");
-        }
-      }}
-    >
-      <div>
-        <input
-          type="email"
-          name="email"
-          required
-          aria-label="Your email address"
-          placeholder="Your email address"
-        />
-        <button aria-label="Subscribe to newsletter">
-          <ArrowUpRight size={22} />
-        </button>
-      </div>
-      <small>
-        {message ||
-          "By subscribing, you agree to our privacy policy. Unsubscribe anytime."}
-      </small>
-    </form>
+    <div className="subscribe">
+      <Link href="/contact?type=newsletter" className="btn btn-dark">
+        Join the Luxe list <ArrowUpRight size={18} />
+      </Link>
+      <small>Newsletter signup is optional. Unsubscribe anytime.</small>
+    </div>
   );
 }
 function Consent() {
@@ -384,7 +331,7 @@ function Consent() {
         A small note about cookies.
         <br />
         <small>
-          We use essential cookies to keep bookings and your bag working.
+          Browser storage remembers your product selections and preferences.
         </small>
       </p>
       <button

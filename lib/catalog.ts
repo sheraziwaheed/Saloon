@@ -225,12 +225,12 @@ export const faqs = [
   {
     question: "Can I change or cancel my appointment?",
     answer:
-      "You can use the secure link in your confirmation to change or cancel up to 24 hours before your appointment. Within 24 hours, please call the salon.",
+      "Please contact the salon directly to change or cancel your appointment. We ask for at least 24 hours’ notice.",
   },
   {
     question: "Which salon should I choose?",
     answer:
-      "Both our Mayfair and Chelsea spaces offer a warm welcome and our signature standard of care. Select a branch when booking to see its team and availability.",
+      "Both our Mayfair and Chelsea spaces offer a warm welcome and our signature standard of care. Tell us your preferred branch in your request. Our team will confirm availability.",
   },
   {
     question: "Do you offer gift vouchers?",
